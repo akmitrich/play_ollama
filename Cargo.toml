@@ -3,6 +3,13 @@ name = "play_ollama"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lints.rust]
+unsafe_code = "forbid"
+unused = "allow"
 
 [dependencies]
+derive_more = { version = "1.0.0-beta", features = ["from"] }
+tokio = { version = "1", features = ["full"] }
+ollama-rs = { version = "0.1", features = ["stream"] }
+simple-fs = { version = "0.1", features = ["full"] }
+futures = "0.3"
