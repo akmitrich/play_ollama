@@ -13,10 +13,16 @@ pub mod consts {
 pub mod gen {
     use crate::Result;
     use futures::StreamExt;
-    use ollama_rs::{generation::completion::request::GenerationRequest, Ollama};
+    use ollama_rs::{
+        generation::completion::{request::GenerationRequest, GenerationFinalResponseData},
+        Ollama,
+    };
     use tokio::io::AsyncWriteExt;
 
-    pub async fn stream_print(ollama: &Ollama, req: GenerationRequest) -> Result<()> {
+    pub async fn stream_print(
+        ollama: &Ollama,
+        req: GenerationRequest,
+    ) -> Result<Option<GenerationFinalResponseData>> {
         let mut stream = ollama.generate_stream(req).await?;
         let mut out = tokio::io::stdout();
         let mut count = 0;
@@ -32,10 +38,15 @@ pub mod gen {
                 }
                 out.write_all(output).await?;
                 out.flush().await?;
+                if let Some(final_data) = r.final_data {
+                    out.write_all(b"\n").await?;
+                    out.flush().await?;
+                    return Ok(Some(final_data));
+                }
             }
         }
         out.write_all(b"\n").await?;
-
-        Ok(())
+        out.flush().await?;
+        Ok(None)
     }
 }
